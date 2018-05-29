@@ -51,17 +51,50 @@
     
     [super viewDidLayoutSubviews];
     
+    // 隐藏红色框视图
+    self.highlightView.frame = CGRectZero;
+    
     // 让 layer 获得正确的大小
     self.cameraLayer.frame = self.cameraView.bounds;
     
-    // 为 观察对象 转换矩阵
-    CGRect originalRect = self.highlightView.frame;
-    CGRect converteRect = [self.cameraLayer metadataOutputRectOfInterestForRect:originalRect];
-    converteRect.origin.y = 1 - converteRect.origin.y;
+
     
-    // 设置观察对象
-    VNDetectedObjectObservation *newObservation = [VNDetectedObjectObservation observationWithBoundingBox:converteRect];
-    self.lastObservation = newObservation;
+}
+
+//typedef void (^VNRequestCompletionHandler)(VNRequest *request, NSError * _Nullable error);
+//
+
+#pragma mark - 处理 Vision 请求管理更新
+- (void)handleVisionRequestUpdate:(VNRequest *)request error:(NSError *)error {
+    
+    // 主队列里面 进行非原子性非线程安全属性
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // 类型不正确就直接返回
+        if (![request.results.firstObject isKindOfClass:[VNDetectedObjectObservation class]]) {
+            return;
+        }
+        VNDetectedObjectObservation *newObservation = request.results.firstObject;
+        // 正确就保存 并准备事件循环
+        self.lastObservation = newObservation;
+        
+        // 在更新 UI 前需要检查置信度
+        if (newObservation.confidence < 0.3) {
+            // 如果小于 0.3
+            // 隐藏 highlightView
+            self.highlightView.frame = CGRectZero;
+            return;
+        }
+        
+        // 计算 视图 rect
+        CGRect transformeRect = newObservation.boundingBox;
+        transformeRect.origin.y = 1 - transformeRect.origin.y;
+        CGRect convertedRect = [self.cameraLayer metadataOutputRectOfInterestForRect:transformeRect];
+        
+        // 移动 highLightView
+        self.highlightView.frame = convertedRect;
+    });
+    
+    
     
 }
 
@@ -71,6 +104,15 @@
     // 获取点击的中点
     self.highlightView.frame = CGRectMake(0, 0, 120, 120);
     self.highlightView.center = [sender locationInView:self.view];
+    
+    // 为 观察对象 转换矩阵
+    CGRect originalRect = self.highlightView.frame;
+    CGRect converteRect = [self.cameraLayer metadataOutputRectOfInterestForRect:originalRect];
+    converteRect.origin.y = 1 - converteRect.origin.y;
+    
+    // 设置观察对象
+    VNDetectedObjectObservation *newObservation = [VNDetectedObjectObservation observationWithBoundingBox:converteRect];
+    self.lastObservation = newObservation;
     
 }
 
@@ -85,7 +127,9 @@
         return;
     }
     // 创建请求
-    VNTrackObjectRequest *request = [[VNTrackObjectRequest alloc] initWithDetectedObjectObservation:self.lastObservation completionHandler:nil];
+    VNTrackObjectRequest *request = [[VNTrackObjectRequest alloc] initWithDetectedObjectObservation:self.lastObservation completionHandler:^(VNRequest * _Nonnull request, NSError * _Nullable error) {
+        [self handleVisionRequestUpdate:request error:error];
+    }];
     request.trackingLevel = VNRequestTrackingLevelAccurate;
     
     // 执行请求
