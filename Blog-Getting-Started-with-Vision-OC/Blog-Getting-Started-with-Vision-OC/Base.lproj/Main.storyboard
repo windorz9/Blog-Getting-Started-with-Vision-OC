@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="59i-98-VEx">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -10,7 +10,7 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--View Controller-->
+        <!--Tap to Track-->
         <scene sceneID="tne-QT-ifu">
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="ViewController" sceneMemberID="viewController">
@@ -19,26 +19,62 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TyI-7s-Von">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                                <rect key="frame" x="0.0" y="64" width="375" height="603"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="T8b-bs-LVn">
+                                        <rect key="frame" x="67" y="140" width="89" height="81"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <color key="backgroundColor" red="1" green="0.14913141730000001" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    </view>
+                                </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <gestureRecognizers/>
+                                <connections>
+                                    <outletCollection property="gestureRecognizers" destination="Jhi-xG-4gQ" appends="YES" id="R4I-xm-H76"/>
+                                </connections>
                             </view>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="TyI-7s-Von" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="4UV-hN-vGn"/>
-                            <constraint firstItem="TyI-7s-Von" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="-20" id="J3R-z3-Mdk"/>
+                            <constraint firstItem="TyI-7s-Von" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="J3R-z3-Mdk"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="TyI-7s-Von" secondAttribute="bottom" id="nUG-gR-xdM"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="TyI-7s-Von" secondAttribute="trailing" id="zoZ-JF-inU"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
+                    <navigationItem key="navigationItem" title="Tap to Track" id="rlj-M8-SuL"/>
                     <connections>
                         <outlet property="cameraView" destination="TyI-7s-Von" id="qX4-Ve-hIQ"/>
+                        <outlet property="highlightView" destination="T8b-bs-LVn" id="ewz-ug-hkD"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+                <tapGestureRecognizer id="Jhi-xG-4gQ">
+                    <connections>
+                        <action selector="userTapped:" destination="BYZ-38-t0r" id="F8q-lU-n2Z"/>
+                    </connections>
+                </tapGestureRecognizer>
             </objects>
-            <point key="canvasLocation" x="-238" y="-116"/>
+            <point key="canvasLocation" x="758" y="-168"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="TqE-l3-QD9">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="59i-98-VEx" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="02m-BR-eMD">
+                        <rect key="frame" x="0.0" y="20" width="375" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="BYZ-38-t0r" kind="relationship" relationship="rootViewController" id="zal-U2-bEx"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Vxp-YS-FIP" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="44" y="-167.76611694152925"/>
         </scene>
     </scenes>
 </document>
