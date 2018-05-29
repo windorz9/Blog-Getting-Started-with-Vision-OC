@@ -14,6 +14,8 @@
 @property (weak, nonatomic) IBOutlet UIView *cameraView;
 @property (nonatomic, strong) AVCaptureVideoPreviewLayer *cameraLayer;
 @property (nonatomic, strong) AVCaptureSession *captureSession;
+@property (nonatomic, strong) VNSequenceRequestHandler *visionSequenceHandle;
+@property (nonatomic, strong) VNDetectedObjectObservation *lastObservation;
 @end
 
 @implementation ViewController
@@ -46,7 +48,23 @@
 #pragma mark - AVCaptureVideoDataOutputSampleBufferDelegate
 - (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
     
-    NSLog(@"-----");
+    // 确保像素转换区可以被转换
+    CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+    // 确保持有一个 老观察对象 来满足一个进行请求的条件
+    if (!self.lastObservation) {
+        // 如果不存在直接返回
+        return;
+    }
+    // 创建请求
+    VNTrackObjectRequest *request = [[VNTrackObjectRequest alloc] initWithDetectedObjectObservation:self.lastObservation completionHandler:nil];
+    request.trackingLevel = VNRequestTrackingLevelAccurate;
+    
+    // 执行请求
+    NSError *error = nil;
+    [self.visionSequenceHandle performRequests:@[request] onCVPixelBuffer:pixelBuffer error:&error];
+    if (error) {
+        NSLog(@"error: %@", error);
+    }
     
 }
 
@@ -74,6 +92,16 @@
 
     }
     return _captureSession;
+}
+
+- (VNSequenceRequestHandler *)visionSequenceHandle {
+    
+    if (!_visionSequenceHandle) {
+        _visionSequenceHandle = [[VNSequenceRequestHandler alloc] init];
+    }
+    
+    return _visionSequenceHandle;
+
 }
 
 @end
