@@ -25,10 +25,7 @@
     [super viewDidLoad];
     
     [self setupUI];
-    
-    // 让 camera 实时获取的视频出现在屏幕上
-    [self.cameraView.layer addSublayer:self.cameraLayer];
-    
+
     // 注册接收相机缓冲区
     AVCaptureVideoDataOutput *videoOutput = [[AVCaptureVideoDataOutput alloc] init];
     [videoOutput setSampleBufferDelegate:self queue: dispatch_queue_create("MyQueue", NULL)];
@@ -40,10 +37,16 @@
 
 - (void)setupUI {
     
+    // 隐藏红色框视图
+    self.highlightView.frame = CGRectZero;
+    
     self.highlightView.layer.borderColor = [[UIColor redColor] CGColor];
     self.highlightView.layer.borderWidth = 4.0;
     self.highlightView.backgroundColor = [UIColor clearColor];
     
+    
+    // 让 camera 实时获取的视频出现在屏幕上
+    [self.cameraView.layer addSublayer:self.cameraLayer];
     
 }
 
@@ -51,55 +54,27 @@
     
     [super viewDidLayoutSubviews];
     
-    // 隐藏红色框视图
-    self.highlightView.frame = CGRectZero;
-    
-    // 让 layer 获得正确的大小
+        // 让 layer 获得正确的大小
     self.cameraLayer.frame = self.cameraView.bounds;
     
-
     
 }
 
-//typedef void (^VNRequestCompletionHandler)(VNRequest *request, NSError * _Nullable error);
-//
 
-#pragma mark - 处理 Vision 请求管理更新
-- (void)handleVisionRequestUpdate:(VNRequest *)request error:(NSError *)error {
+#pragma mark - 重置追踪
+- (IBAction)resetTrack:(UIBarButtonItem *)sender {
     
-    // 主队列里面 进行非原子性非线程安全属性
-    dispatch_async(dispatch_get_main_queue(), ^{
-        // 类型不正确就直接返回
-        if (![request.results.firstObject isKindOfClass:[VNDetectedObjectObservation class]]) {
-            return;
-        }
-        VNDetectedObjectObservation *newObservation = request.results.firstObject;
-        // 正确就保存 并准备事件循环
-        self.lastObservation = newObservation;
-        
-        // 在更新 UI 前需要检查置信度
-        if (newObservation.confidence < 0.3) {
-            // 如果小于 0.3
-            // 隐藏 highlightView
-            self.highlightView.frame = CGRectZero;
-            return;
-        }
-        
-        // 计算 视图 rect
-        CGRect transformeRect = newObservation.boundingBox;
-        transformeRect.origin.y = 1 - transformeRect.origin.y;
-        CGRect convertedRect = [self.cameraLayer metadataOutputRectOfInterestForRect:transformeRect];
-        
-        // 移动 highLightView
-        self.highlightView.frame = convertedRect;
-    });
-    
-    
-    
+    self.lastObservation = nil;
+    self.highlightView.frame = CGRectZero;
 }
+
 
 #pragma mark - 点击选框
 - (IBAction)userTapped:(UITapGestureRecognizer *)sender {
+    
+    // 每次点击时需要重置一次追踪
+    self.lastObservation = nil;
+    self.highlightView.frame = CGRectZero;
     
     // 获取点击的中点
     self.highlightView.frame = CGRectMake(0, 0, 120, 120);
@@ -130,7 +105,12 @@
     VNTrackObjectRequest *request = [[VNTrackObjectRequest alloc] initWithDetectedObjectObservation:self.lastObservation completionHandler:^(VNRequest * _Nonnull request, NSError * _Nullable error) {
         [self handleVisionRequestUpdate:request error:error];
     }];
-    request.trackingLevel = VNRequestTrackingLevelAccurate;
+    
+//    VNTrackObjectRequest *request = [[VNTrackObjectRequest alloc] initWithDetectedObjectObservation:self.lastObservation completionHandler:nil];
+    // 快速识别和精确识别
+    // VNRequestTrackingLevelAccurate 精确的
+    // VNRequestTrackingLevelFast 快速的
+    request.trackingLevel = VNRequestTrackingLevelFast;
     
     // 执行请求
     NSError *error = nil;
@@ -140,6 +120,44 @@
     }
     
 }
+
+//typedef void (^VNRequestCompletionHandler)(VNRequest *request, NSError * _Nullable error);
+//
+
+#pragma mark - 处理 Vision 请求管理更新
+- (void)handleVisionRequestUpdate:(VNRequest *)request error:(NSError *)error {
+    
+    // 主队列里面 进行非原子性非线程安全属性
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // 类型不正确就直接返回
+        if (![request.results.firstObject isKindOfClass:[VNDetectedObjectObservation class]]) {
+            return;
+        }
+        VNDetectedObjectObservation *newObservation = request.results.firstObject;
+        // 正确就保存 并准备事件循环
+        self.lastObservation = newObservation;
+        
+        // 在更新 UI 前需要检查置信度
+        if (newObservation.confidence < 0.3) {
+            // 如果小于 0.3
+            // 隐藏 highlightView
+            self.highlightView.frame = CGRectZero;
+            return;
+        }
+        
+        
+        // 计算 视图 rect
+        CGRect transformeRect = newObservation.boundingBox;
+        transformeRect.origin.y = 1 - transformeRect.origin.y;
+        CGRect convertedRect = [self.cameraLayer rectForMetadataOutputRectOfInterest:transformeRect];
+        
+        // 移动 highLightView
+        self.highlightView.frame = convertedRect;
+    });
+
+}
+
+
 
 #pragma mark - 懒加载属性
 - (AVCaptureVideoPreviewLayer *)cameraLayer {

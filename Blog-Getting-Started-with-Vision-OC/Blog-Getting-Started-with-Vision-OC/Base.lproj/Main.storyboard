@@ -10,7 +10,7 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Tap to Track-->
+        <!--点击追踪-->
         <scene sceneID="tne-QT-ifu">
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="ViewController" sceneMemberID="viewController">
@@ -41,7 +41,13 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
-                    <navigationItem key="navigationItem" title="Tap to Track" id="rlj-M8-SuL"/>
+                    <navigationItem key="navigationItem" title="点击追踪" id="rlj-M8-SuL">
+                        <barButtonItem key="rightBarButtonItem" title="重置" id="IvB-Ih-ocQ">
+                            <connections>
+                                <action selector="resetTrack:" destination="BYZ-38-t0r" id="LOb-in-Y2z"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="cameraView" destination="TyI-7s-Von" id="qX4-Ve-hIQ"/>
                         <outlet property="highlightView" destination="T8b-bs-LVn" id="ewz-ug-hkD"/>
@@ -54,7 +60,7 @@
                     </connections>
                 </tapGestureRecognizer>
             </objects>
-            <point key="canvasLocation" x="758" y="-168"/>
+            <point key="canvasLocation" x="942" y="-241"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="TqE-l3-QD9">
