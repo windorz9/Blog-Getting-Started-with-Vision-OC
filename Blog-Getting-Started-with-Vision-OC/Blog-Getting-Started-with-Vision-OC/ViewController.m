@@ -10,7 +10,7 @@
 #import <Vision/Vision.h>
 #import <AVFoundation/AVFoundation.h>
 
-@interface ViewController ()
+@interface ViewController () <AVCaptureVideoDataOutputSampleBufferDelegate>
 @property (weak, nonatomic) IBOutlet UIView *cameraView;
 @property (nonatomic, strong) AVCaptureVideoPreviewLayer *cameraLayer;
 @property (nonatomic, strong) AVCaptureSession *captureSession;
@@ -21,8 +21,14 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    // 让 camera 实时获取的视频出现在屏幕上
     [self.cameraView.layer addSublayer:self.cameraLayer];
     
+    // 注册接收相机缓冲区
+    AVCaptureVideoDataOutput *videoOutput = [[AVCaptureVideoDataOutput alloc] init];
+    [videoOutput setSampleBufferDelegate:self queue: dispatch_queue_create("MyQueue", NULL)];
+    [self.captureSession addOutput:videoOutput];
+    // 让 session 开始
     [self.captureSession startRunning];
     
 }
@@ -31,8 +37,16 @@
     
     [super viewDidLayoutSubviews];
     
+    // 让 layer 获得正确的大小
     self.cameraLayer.frame = self.cameraView.bounds;
     
+    
+}
+
+#pragma mark - AVCaptureVideoDataOutputSampleBufferDelegate
+- (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
+    
+    NSLog(@"-----");
     
 }
 
